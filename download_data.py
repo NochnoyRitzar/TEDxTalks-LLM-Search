@@ -45,6 +45,7 @@ def get_confirm_token(response):
 
 def save_response_content(response, destination):
     """Saves the content of the response to a file."""
+    os.makedirs(os.path.split(destination)[0], exist_ok=True)
 
     with open(destination, "wb") as f:
         for chunk in response.iter_content(1024):
