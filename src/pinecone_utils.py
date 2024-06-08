@@ -4,7 +4,7 @@ from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from llama_index.embeddings.vertex import VertexTextEmbedding, VertexEmbeddingMode
-from load_data import convert_df_to_documents
+from src.load_data import convert_df_to_documents
 
 
 def create_index(dims: int, metric: str = "cosine"):
@@ -30,7 +30,7 @@ def populate_pinecone_db(json_path: str):
     :param json_path: Path to local JSON file containing TED talks data.
     """
     vector_store = PineconeVectorStore(
-        api_key=os.environ["PINECONE_INDEX_NAME"],
+        api_key=os.environ["PINECONE_API_KEY"],
         index_name=os.environ["PINECONE_INDEX_NAME"],
     )
     pipeline = IngestionPipeline(
