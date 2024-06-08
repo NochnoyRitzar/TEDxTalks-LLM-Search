@@ -1,14 +1,10 @@
 import os
 from pinecone import Pinecone, ServerlessSpec
 from llama_index.core.ingestion import IngestionPipeline
+from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from llama_index.embeddings.vertex import VertexTextEmbedding, VertexEmbeddingMode
-from dotenv import load_dotenv
-
 from load_data import convert_df_to_documents
-
-load_dotenv("../.env")
-pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
 
 
 def create_index(dims: int, metric: str = "cosine"):
@@ -17,12 +13,14 @@ def create_index(dims: int, metric: str = "cosine"):
     :param dims: Number of dimensions of the vectors to be stored.
     :param metric: Distance metric used for similarity search.
     """
+    pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
     pc.create_index(
         name=os.environ["PINECONE_INDEX_NAME"],
         dimension=dims,
         metric=metric,
         spec=ServerlessSpec(cloud="aws", region="eu-west-1"),
     )
+    print("Pinecone index is set up and ready.")
 
 
 def populate_pinecone_db(csv_path: str):
@@ -31,11 +29,8 @@ def populate_pinecone_db(csv_path: str):
 
     :param csv_path: Path to local CSV file containing TED talks data.
     """
-    if os.environ["PINECONE_INDEX_NAME"] not in pc.list_indexes().names():
-        create_index(dims=768, metric="cosine")
-
     vector_store = PineconeVectorStore(
-        api_key=os.environ["PINECONE_API_KEY"],
+        api_key=os.environ["PINECONE_INDEX_NAME"],
         index_name=os.environ["PINECONE_INDEX_NAME"],
     )
     pipeline = IngestionPipeline(
@@ -48,7 +43,13 @@ def populate_pinecone_db(csv_path: str):
             )
         ],
         vector_store=vector_store,
+        docstore=SimpleDocumentStore(),
     )
 
     documents = convert_df_to_documents(csv_path)
-    pipeline.run(documents=documents, show_progress=True)
+    pipeline.run(documents=documents, show_progress=True, num_workers=4)
+
+    # Persist the pipeline for future use, avoids duplicates when inserting new data
+    pipeline.persist("../data/pipeline_storage")
+
+    print("Data has been successfully populated into the Pinecone database.")
