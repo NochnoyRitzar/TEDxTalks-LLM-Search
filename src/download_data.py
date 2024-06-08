@@ -2,13 +2,14 @@ import os
 import requests
 
 
-def download_file_from_google_drive(file_id: str, destination: str) -> bool:
+def download_dataset_from_gdrive(
+    destination: str, file_id: str = "1AjkMy6kjvYGgFKivRpXaxV5e6FTo7HxN"
+):
     """
     Downloads a file from Google Drive using its file ID and saves it to the specified destination.
 
-    :param file_id: The ID of the file to download.
     :param destination: The path to save the downloaded file.
-    :return: True if the download was successful, False otherwise.
+    :param file_id: The ID of the file to download.
     """
     URL = f"https://drive.google.com/uc?export=download&id={file_id}"
 
@@ -22,12 +23,10 @@ def download_file_from_google_drive(file_id: str, destination: str) -> bool:
             response = session.get(URL, params=params, stream=True)
 
         save_response_content(response, destination)
-
-        return True
+        print("File downloaded successfully!")
 
     except Exception as e:
         print(f"Download failed: {e}")
-        return False
 
 
 def get_confirm_token(response):
@@ -48,14 +47,3 @@ def save_response_content(response, destination):
         for chunk in response.iter_content(1024):
             if chunk:  # Filter out keep-alive new chunks
                 f.write(chunk)
-
-
-if __name__ == "__main__":
-    file_id = "1AjkMy6kjvYGgFKivRpXaxV5e6FTo7HxN"
-
-    if download_file_from_google_drive(
-        file_id, os.path.join("data", "raw", "ted_talks.csv")
-    ):
-        print("File downloaded successfully!")
-    else:
-        print("Download failed.")
