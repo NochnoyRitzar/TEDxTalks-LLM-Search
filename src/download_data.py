@@ -2,17 +2,14 @@ import os
 import requests
 
 
-def download_file_from_google_drive(file_id, destination):
-    """Downloads a file from Google Drive using its file ID and saves it to the specified destination.
-
-    Args:
-        file_id (str): The ID of the file to download.
-        destination (str): The path to save the downloaded file.
-
-    Returns:
-        bool: True if the download was successful, False otherwise.
+def download_file_from_google_drive(file_id: str, destination: str) -> bool:
     """
+    Downloads a file from Google Drive using its file ID and saves it to the specified destination.
 
+    :param file_id: The ID of the file to download.
+    :param destination: The path to save the downloaded file.
+    :return: True if the download was successful, False otherwise.
+    """
     URL = f"https://drive.google.com/uc?export=download&id={file_id}"
 
     try:
@@ -21,7 +18,7 @@ def download_file_from_google_drive(file_id, destination):
         token = get_confirm_token(response)
 
         if token:
-            params = {'confirm': token}
+            params = {"confirm": token}
             response = session.get(URL, params=params, stream=True)
 
         save_response_content(response, destination)
@@ -37,7 +34,7 @@ def get_confirm_token(response):
     """Extracts the confirmation token from the response if needed."""
 
     for key, value in response.cookies.items():
-        if key.startswith('download_warning'):
+        if key.startswith("download_warning"):
             return value
 
     return None
@@ -54,9 +51,11 @@ def save_response_content(response, destination):
 
 
 if __name__ == "__main__":
-    file_id = '1AjkMy6kjvYGgFKivRpXaxV5e6FTo7HxN'
+    file_id = "1AjkMy6kjvYGgFKivRpXaxV5e6FTo7HxN"
 
-    if download_file_from_google_drive(file_id, os.path.join('data', 'ted_talks.csv')):
+    if download_file_from_google_drive(
+        file_id, os.path.join("data", "raw", "ted_talks.csv")
+    ):
         print("File downloaded successfully!")
     else:
         print("Download failed.")
