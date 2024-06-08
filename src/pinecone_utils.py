@@ -3,6 +3,8 @@ from pinecone import Pinecone, ServerlessSpec
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.vector_stores.pinecone import PineconeVectorStore
+from llama_index.core.indices import VectorStoreIndex
+from llama_index.core.retrievers import VectorIndexAutoRetriever, VectorIndexRetriever
 from llama_index.embeddings.vertex import VertexTextEmbedding, VertexEmbeddingMode
 from src.load_data import convert_df_to_documents
 
@@ -53,3 +55,28 @@ def populate_pinecone_db(json_path: str):
     pipeline.persist(os.path.join("data", "pipeline_storage"))
 
     print("Data has been successfully populated into the Pinecone database.")
+
+
+def create_pinecone_retriever(top_k) -> VectorIndexRetriever:
+    """
+    Create a vector retriever.
+
+    :return: VectorIndexRetriever object.
+    """
+    vector_store = PineconeVectorStore(
+        api_key=os.environ["PINECONE_API_KEY"],
+        index_name=os.environ["PINECONE_INDEX_NAME"]
+    )
+    index = VectorStoreIndex.from_vector_store(vector_store)
+    retriever = VectorIndexRetriever(
+        index=index,
+        similarity_top_k=top_k,
+        embed_model=VertexTextEmbedding(
+            project=os.environ.get("GCP_PROJECT_ID"),
+            location=os.environ.get("GCP_LOCATION"),
+            model_name="text-embedding-004",
+            embed_mode=VertexEmbeddingMode.SEMANTIC_SIMILARITY_MODE,
+        )
+    )
+
+    return retriever
