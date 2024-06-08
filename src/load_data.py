@@ -14,11 +14,12 @@ def convert_df_to_documents(df_path: str) -> list[Document]:
         Document(
             # @TODO: Consider using other columns
             text=row["summary"],
-            # @TODO: Add metadata to the Document object
-            # metadata={
-            #     'authors': row['ID'],
-            #     'Type': row['Type']
-            # }
+            metadata={
+                "page_url": row["page_url"],
+                "title": row["title"],
+                "duration": int(row["duration"]),
+                "topics_list": row["topics_names"].split(", "),
+            }
         )
         for _, row in df.iterrows()
     ]
