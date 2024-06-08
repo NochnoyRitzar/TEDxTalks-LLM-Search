@@ -1,32 +1,44 @@
 import streamlit as st
+from dotenv import load_dotenv
+from src.pinecone_utils import create_pinecone_retriever
 
-def process_query(query):
-    # Placeholder function to process the query
-    # Replace this with actual logic to find TED talks
-    return [
-        {"title": "Talk 1", "speaker": "Speaker 1", "description": "Description of talk 1"},
-        {"title": "Talk 2", "speaker": "Speaker 2", "description": "Description of talk 2"},
-        {"title": "Talk 3", "speaker": "Speaker 3", "description": "Description of talk 3"},
-        {"title": "Talk 4", "speaker": "Speaker 4", "description": "Description of talk 4"},
+load_dotenv(".env")
+retriever = create_pinecone_retriever(top_k=3)
+
+
+def retrieve_similar_talks(query):
+    results = retriever.retrieve(query)
+
+    response = [
+        {
+            "title": result.metadata.get("title"),
+            "page_url": result.metadata.get("page_url"),
+            "summary": result.get_text(),
+            "score": result.get_score()
+        }
+        for result in results
     ]
+    return response
+
 
 def display_cards(talks):
     # Create a grid of cards to display the talks
-    cols = st.columns(4)
+    cols = st.columns(3)
     for col, talk in zip(cols, talks):
         with col:
-            st.subheader(talk['title'])
-            st.write(f"Speaker: {talk['speaker']}")
-            st.write(talk['description'])
+            st.subheader(f"[{talk.get('title')}]({talk.get('page_url')})")
+            st.write(talk.get("summary"))
+            st.write(talk.get("score"))
+            # st.link_button("Watch the talk", talk.get("page_url"))
+
 
 def main():
-    st.title('TED Talk Finder')
+    st.title("TED Talk Finder")
+
     user_query = st.text_input("Enter your query to find the best TED talks:", "")
 
     if user_query:
-        # Process the query to get TED talks
-        result_talks = process_query(user_query)
-        # Display the talks in cards
+        result_talks = retrieve_similar_talks(user_query)
         display_cards(result_talks)
 
 if __name__ == "__main__":
