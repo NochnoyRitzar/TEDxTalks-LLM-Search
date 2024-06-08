@@ -47,9 +47,9 @@ def populate_pinecone_db(json_path: str):
     )
 
     documents = convert_df_to_documents(json_path)
-    pipeline.run(documents=documents, show_progress=True, num_workers=4)
+    pipeline.run(documents=documents, show_progress=True)
 
     # Persist the pipeline for future use, avoids duplicates when inserting new data
-    pipeline.persist("../data/pipeline_storage")
+    pipeline.persist(os.path.join("data", "pipeline_storage"))
 
     print("Data has been successfully populated into the Pinecone database.")
