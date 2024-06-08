@@ -3,17 +3,17 @@ import ast
 import pandas as pd
 
 
-def save_dataframe_as_json(output_dir: str, df: pd.DataFrame):
+def save_dataframe_as_json(df: pd.DataFrame, output_file_path: str):
     """
     Save a pandas dataframe as a JSON file.
 
-    :param output_dir: The directory to save the JSON file in.
     :param df: The pandas dataframe to save as JSON file.
+    :param output_file_path: The path to save JSON file.
     """
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir, exist_ok=True)
+    if not os.path.exists(os.path.dirname(output_file_path)):
+        os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
-    df.to_json(os.path.join(output_dir, "ted_talks.json"), orient="records")
+    df.to_json(output_file_path, orient="records")
     print("Dataset downloaded and saved as JSON file.")
 
 
