@@ -23,11 +23,11 @@ def create_index(dims: int, metric: str = "cosine"):
     print("Pinecone index is set up and ready.")
 
 
-def populate_pinecone_db(csv_path: str):
+def populate_pinecone_db(json_path: str):
     """
     Populate a Pinecone index with TED talks data.
 
-    :param csv_path: Path to local CSV file containing TED talks data.
+    :param json_path: Path to local JSON file containing TED talks data.
     """
     vector_store = PineconeVectorStore(
         api_key=os.environ["PINECONE_INDEX_NAME"],
@@ -46,7 +46,7 @@ def populate_pinecone_db(csv_path: str):
         docstore=SimpleDocumentStore(),
     )
 
-    documents = convert_df_to_documents(csv_path)
+    documents = convert_df_to_documents(json_path)
     pipeline.run(documents=documents, show_progress=True, num_workers=4)
 
     # Persist the pipeline for future use, avoids duplicates when inserting new data

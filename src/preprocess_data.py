@@ -131,16 +131,8 @@ def process_topics_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def preprocess_raw_dataset(raw_csv_path: str, output_dir: str = os.path.join("data", "preprocessed")):
-    df = pd.read_csv(
-        os.path.join(raw_csv_path),
-        converters={
-            "related_videos": literal_eval,
-            "speakers": literal_eval,
-            "subtitle_languages": literal_eval,
-            "topics": literal_eval,
-        },
-    )
+def preprocess_raw_dataset(raw_json_path: str, output_dir: str = os.path.join("data", "preprocessed")):
+    df = pd.read_json(raw_json_path)
 
     df = process_rel_videos_column(df)
     df = process_speakers_column(df)
@@ -153,6 +145,6 @@ def preprocess_raw_dataset(raw_csv_path: str, output_dir: str = os.path.join("da
     df["transcript"] = df["transcript"].apply(clean_text_column)
 
     os.makedirs(output_dir, exist_ok=True)
-    df.to_csv(os.path.join(output_dir, "preprocessed_ted_talks.csv"), index=False)
+    df.to_json(os.path.join(output_dir, "preprocessed_ted_talks.json"), orient="records")
 
     print("Data successfully preprocessed and saved.")

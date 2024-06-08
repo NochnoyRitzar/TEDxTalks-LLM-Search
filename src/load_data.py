@@ -5,10 +5,10 @@ from llama_index.core import Document
 def convert_df_to_documents(df_path: str) -> list[Document]:
     """
     Convert a pandas dataframe to a list of llama-index Document objects.
-    :param df_path:
+    :param df_path: path to local pandas dataframe
     :return:
     """
-    df = pd.read_csv(df_path)
+    df = pd.read_json(df_path)
 
     documents = [
         Document(

@@ -1,49 +1,41 @@
 import os
-import requests
+import ast
+import pandas as pd
 
 
-def download_dataset_from_gdrive(
-    destination: str, file_id: str = "1AjkMy6kjvYGgFKivRpXaxV5e6FTo7HxN"
-):
+def save_dataframe_as_json(output_dir: str, df: pd.DataFrame):
     """
-    Downloads a file from Google Drive using its file ID and saves it to the specified destination.
+    Save a pandas dataframe as a JSON file.
 
-    :param destination: The path to save the downloaded file.
+    :param output_dir: The directory to save the JSON file in.
+    :param df: The pandas dataframe to save as JSON file.
+    """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir, exist_ok=True)
+
+    df.to_json(os.path.join(output_dir, "ted_talks.json"), orient="records")
+    print("Dataset downloaded and saved as JSON file.")
+
+
+def load_df_from_gdrive(file_id: str = "1AjkMy6kjvYGgFKivRpXaxV5e6FTo7HxN") -> pd.DataFrame:
+    """
+    Loads a pandas dataframe from CSV file in Google Drive and stores it in-memory.
+
     :param file_id: The ID of the file to download.
+    :return: A pandas dataframe.
     """
     URL = f"https://drive.google.com/uc?export=download&id={file_id}"
-
     try:
-        session = requests.Session()
-        response = session.get(URL, stream=True)
-        token = get_confirm_token(response)
-
-        if token:
-            params = {"confirm": token}
-            response = session.get(URL, params=params, stream=True)
-
-        save_response_content(response, destination)
-        print("File downloaded successfully!")
-
+        df = pd.read_csv(
+            URL,
+            converters={
+                'related_videos': ast.literal_eval,
+                'speakers': ast.literal_eval,
+                'subtitle_languages': ast.literal_eval,
+                'topics': ast.literal_eval
+            }
+        )
     except Exception as e:
         print(f"Download failed: {e}")
 
-
-def get_confirm_token(response):
-    """Extracts the confirmation token from the response if needed."""
-
-    for key, value in response.cookies.items():
-        if key.startswith("download_warning"):
-            return value
-
-    return None
-
-
-def save_response_content(response, destination):
-    """Saves the content of the response to a file."""
-    os.makedirs(os.path.split(destination)[0], exist_ok=True)
-
-    with open(destination, "wb") as f:
-        for chunk in response.iter_content(1024):
-            if chunk:  # Filter out keep-alive new chunks
-                f.write(chunk)
+    return df
