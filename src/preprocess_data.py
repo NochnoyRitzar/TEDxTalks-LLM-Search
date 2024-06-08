@@ -131,9 +131,9 @@ def process_topics_column(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
-def preprocess_raw_dataset(csv_path: str):
+def preprocess_raw_dataset(raw_csv_path: str, output_dir: str = os.path.join("data", "preprocessed")):
     df = pd.read_csv(
-        os.path.join(csv_path),
+        os.path.join(raw_csv_path),
         converters={
             "related_videos": literal_eval,
             "speakers": literal_eval,
@@ -152,11 +152,7 @@ def preprocess_raw_dataset(csv_path: str):
     df["transcript"] = df["transcript"].fillna("")
     df["transcript"] = df["transcript"].apply(clean_text_column)
 
-    output_dir = os.path.join("data", "preprocessed")
     os.makedirs(output_dir, exist_ok=True)
     df.to_csv(os.path.join(output_dir, "preprocessed_ted_talks.csv"), index=False)
 
-
-if __name__ == "__main__":
-    preprocess_raw_dataset(os.path.join("data", "raw", "ted_talks.csv"))
-    print("Data preprocessed successfully.")
+    print("Data successfully preprocessed and saved.")
